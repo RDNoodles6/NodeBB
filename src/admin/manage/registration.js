@@ -1,5 +1,8 @@
 'use strict';
 
+// Define a global `define` if it's not already defined
+/* global define */
+
 define(['jquery', 'socket', 'alerts', 'bootbox'], ($, socket, alerts, bootbox) => {
 	const Registration = {};
 
@@ -52,11 +55,13 @@ define(['jquery', 'socket', 'alerts', 'bootbox'], ($, socket, alerts, bootbox) =
 
 function helper(confirm, email, invitedBy, method, removeRow) {
 	if (confirm) {
-		socket.emit(method, { email, invitedBy }, (err) => {
-			if (err) {
-				return alerts.error(err);
-			}
-			removeRow();
+		require(['socket', 'alerts'], (socket, alerts) => {
+			socket.emit(method, { email, invitedBy }, (err) => {
+				if (err) {
+					return alerts.error(err);
+				}
+				removeRow();
+			});
 		});
 	}
 }
