@@ -1,54 +1,62 @@
 'use strict';
-define('admin/manage/registration', ['bootbox', 'alerts'], 
-function (bootbox, alerts) {
+
+define(['jquery', 'socket', 'alerts', 'bootbox'], ($, socket, alerts, bootbox) => {
 	const Registration = {};
-	Registration.init = 
-function () {
+
+	Registration.init = () => {
 		$('.users-list').on('click', '[data-action]', function () {
 			const parent = $(this).parents('[data-username]');
 			const action = $(this).attr('data-action');
 			const username = parent.attr('data-username');
 			const method = action === 'accept' ? 'user.acceptRegistration' : 'user.rejectRegistration';
-			socket.emit(method, { username: username }, function (err) {
+
+			socket.emit(method, { username }, (err) => {
 				if (err) {
 					return alerts.error(err);
 				}
 				parent.remove();
 			});
+
 			return false;
 		});
-		$('.invites-list').on('click', '[data-action]', 
-function () {
+
+		$('.invites-list').on('click', '[data-action]', function () {
 			const parent = $(this).parents('[data-invitation-mail][data-invited-by]');
 			const email = parent.attr('data-invitation-mail');
 			const invitedBy = parent.attr('data-invited-by');
 			const action = $(this).attr('data-action');
 			const method = 'user.deleteInvitation';
-			const removeRow = function () {
-				const nextRow = parent.next();
-				const thisRowinvitedBy = parent.find('.invited-by');
-				const nextRowInvitedBy = nextRow.find('.invited-by');
-				if (nextRowInvitedBy.html() !== undefined && nextRowInvitedBy.html().length < 2) {
-					nextRowInvitedBy.html(thisRowinvitedBy.html());
-				}
-				parent.remove();
-			};
+
 			if (action === 'delete') {
-				bootbox.confirm('[[admin/manage/registration:invitations.confirm-delete]]', helper(confirm, email, invitedBy, method, removeRow))
+				bootbox.confirm('[[admin/manage/registration:invitations.confirm-delete]]', (confirm) => {
+					helper(confirm, email, invitedBy, method, () => {
+						const nextRow = parent.next();
+						const thisRowInvitedBy = parent.find('.invited-by');
+						const nextRowInvitedBy = nextRow.find('.invited-by');
+
+						if (nextRowInvitedBy.html() && nextRowInvitedBy.html().length < 2) {
+							nextRowInvitedBy.html(thisRowInvitedBy.html());
+						}
+
+						parent.remove();
+					});
+				});
 			}
+
 			return false;
 		});
 	};
+
 	return Registration;
 });
 
 function helper(confirm, email, invitedBy, method, removeRow) {
-    if (confirm) {
-        socket.emit(method, { email: email, invitedBy: invitedBy }, function (err) {
-            if (err) {
-                return alerts.error(err);
-            }
-            removeRow();
-        });
-    }
+	if (confirm) {
+		socket.emit(method, { email, invitedBy }, (err) => {
+			if (err) {
+				return alerts.error(err);
+			}
+			removeRow();
+		});
+	}
 }
