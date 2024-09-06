@@ -34,7 +34,7 @@ function () {
 				parent.remove();
 			};
 			if (action === 'delete') {
-				bootbox.confirm('[[admin/manage/registration:invitations.confirm-delete]]', helper(confirm))
+				bootbox.confirm('[[admin/manage/registration:invitations.confirm-delete]]', helper(confirm, email, invitedBy, method, removeRow))
 			}
 			return false;
 		});
@@ -42,7 +42,7 @@ function () {
 	return Registration;
 });
 
-function helper(confirm) {
+function helper(confirm, email, invitedBy, method, removeRow) {
     if (confirm) {
         socket.emit(method, { email: email, invitedBy: invitedBy }, function (err) {
             if (err) {
