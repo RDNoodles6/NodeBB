@@ -15,14 +15,14 @@ define(['jquery', 'socket', 'alerts', 'bootbox'], ($, socket, alerts, bootbox) =
 
 			socket.emit(method, { username }, (err) => {
 				if (err) {
-					return alerts.error(err);
+					alerts.error(err);
+				} else {
+					parent.remove();
 				}
-				parent.remove();
 			});
 
 			return false;
 		});
-
 		$('.invites-list').on('click', '[data-action]', function () {
 			const parent = $(this).parents('[data-invitation-mail][data-invited-by]');
 			const email = parent.attr('data-invitation-mail');
@@ -58,9 +58,10 @@ function helper(confirm, email, invitedBy, method, removeRow) {
 		require(['socket', 'alerts'], (socket, alerts) => {
 			socket.emit(method, { email, invitedBy }, (err) => {
 				if (err) {
-					return alerts.error(err);
+					alerts.error(err);
+				} else {
+					removeRow();
 				}
-				removeRow();
 			});
 		});
 	}
